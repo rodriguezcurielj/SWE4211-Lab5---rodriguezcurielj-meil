@@ -1,5 +1,5 @@
 /**
- * @file CommandQueue.cpp.cpp
+ * @file CommandQueue.cpp
  * @author  Walter Schilling (schilling@msoe.edu)
  * @version 1.0
  *
@@ -33,3 +33,65 @@
 
 #include "CommandQueue.h"
 #include <semaphore.h>
+
+namespace SWE4211RPi {
+
+/**
+ * This is the default constructor, which creates an empty instance of the queue.
+ * The counting semaphore is initialized to zero so that a consumer blocks until
+ * the first item is enqueued.  The semaphore is shared only among threads of this process.
+ */
+CommandQueue::CommandQueue() {
+	sem_init(&queueCountSemaphore, 0, 0);
+}
+
+/**
+ * The destructor releases the counting semaphore initialized in the constructor.
+ */
+CommandQueue::~CommandQueue() {
+	sem_destroy(&queueCountSemaphore);
+}
+
+/**
+ * Indicates whether the queue currently contains at least one item ready to dequeue.
+ * Uses the queue's own state (not the semaphore).  Result is a snapshot only.
+ * @return true if there is at least one item on the queue; false otherwise.
+ */
+bool CommandQueue::hasItem() {
+	std::lock_guard<std::mutex> lock(queueMutex);
+	return !commandQueueContents.empty();
+}
+
+/**
+ * Removes and returns the next command from the front of the queue.
+ * Blocks on the counting semaphore if the queue is empty until another thread enqueues.
+ * @return The next command to be processed.
+ */
+CommandQueueEntry CommandQueue::dequeue() {
+	CommandQueueEntry retVal = {0, 0, 0, 0};
+
+	// Block until an item is available.
+	sem_wait(&queueCountSemaphore);
+
+	{
+		std::lock_guard<std::mutex> lock(queueMutex);
+		retVal = commandQueueContents.front();
+		commandQueueContents.pop();
+	}
+
+	return retVal;
+}
+
+/**
+ * Enqueues a command.  Unblocks a thread waiting in dequeue() if one is blocked.
+ * @param value The command queue entry to enqueue.
+ */
+void CommandQueue::enqueue(CommandQueueEntry value) {
+	{
+		std::lock_guard<std::mutex> lock(queueMutex);
+		commandQueueContents.push(value);
+	}
+	sem_post(&queueCountSemaphore);
+}
+
+}

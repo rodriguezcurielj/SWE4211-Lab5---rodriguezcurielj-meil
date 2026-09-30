@@ -1,1 +1,0 @@
-The build folder is where your completed project will go.
