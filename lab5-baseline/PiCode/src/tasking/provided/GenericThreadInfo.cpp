@@ -6,6 +6,12 @@
 
 using namespace SWE4211RPi;
 
+/*
+ * sched_attr is provided by the system headers (via <sched.h> /
+ * <linux/sched/types.h>) on current toolchains.  Keep a local fallback
+ * only when the platform does not already define it.
+ */
+#ifndef SCHED_ATTR_SIZE_VER0
 // From https://sources.debian.org/src/util-linux/2.38.1-1.1/schedutils/sched_attr.h/
 struct sched_attr {
 	uint32_t size;
@@ -27,6 +33,7 @@ struct sched_attr {
 	uint32_t sched_util_min;
 	uint32_t sched_util_max;
 };
+#endif
 
 /**
  * This is the default constructor for the class.
