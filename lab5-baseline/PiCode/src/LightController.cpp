@@ -83,12 +83,24 @@ void LightController::taskMethod() {
 	bool buttonPressed = (pushbutton.getValue() == GPIO::GPIO_LOW);
 
 	if (!lampOn && !buttonPressed) {
-		// Light should stay off; nothing to do this period.
+		// Ensure the active-low LED stays off for this period.
+		light.setValue(GPIO::GPIO_HIGH);
+		return;
+	}
+
+	if (dutyCycle <= 0) {
+		// Commanded on (or button held) at 0% duty — leave the LED off.
+		light.setValue(GPIO::GPIO_HIGH);
 		return;
 	}
 
 	// Light the LED at the current duty cycle (active low = GPIO low).
 	light.setValue(GPIO::GPIO_LOW);
+
+	if (dutyCycle >= 100) {
+		// 100% duty: leave the LED on for the rest of this period.
+		return;
+	}
 
 	// Multiply before dividing to avoid truncating to zero.
 	long onTimeUs = (static_cast<long>(getTaskPeriod()) * dutyCycle) / 100;

@@ -3,7 +3,7 @@
 ## Authors
 
 - Jose Rodriguez Curiel (`rodriguezcurielj`)
-- (add full name for `meil`)
+- Phillip Mei (`meil`)
 
 ## Known Issues
 

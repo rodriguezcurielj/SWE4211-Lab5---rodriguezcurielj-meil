@@ -27,7 +27,8 @@ int main(int argc, char* argv[]) {
 	myQueue[1] = new CommandQueue();
 
 	/**
-	 * Instantiate a network manager and a pair of light controllers.  The light controller should execute every 50 ms.
+	 * Instantiate a network manager and a pair of light controllers.
+	 * Each light controller runs every 10 ms (10000 us) for software PWM.
 	 */
 	NetworkManager nm(9090, myQueue, "Network Thread");
 	LightController lc1(13, 16, *myQueue[0], "Light Controller Thread 1", 10000);
